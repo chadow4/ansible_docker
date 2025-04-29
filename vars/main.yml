@@ -1,0 +1,31 @@
+datastore: "datastore1"
+datastore_path: "/vmfs/volumes/{{ datastore }}"
+iso_path: "{{ datastore_path }}/iso"
+vswitch: "vSwitch1"
+portgroups:
+  - WAN
+  - OPT1
+  - LAN
+vms:
+  - name: "pfsense"
+    guestos: "freebsd10_64Guest"
+    iso: "pfsense.iso"
+    networks:
+      - WAN
+      - OPT1
+      - LAN
+  - name: "kali"
+    guestos: "otherGuest64"
+    iso: "kali.iso"
+    networks:
+      - WAN
+  - name: "prod"
+    guestos: "rhel7_64Guest"
+    iso: "rocky.iso"
+    networks:
+      - LAN
+  - name: "agent"
+    guestos: "rhel7_64Guest"
+    iso: "rocky.iso"
+    networks:
+      - OPT1

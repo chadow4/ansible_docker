@@ -1,0 +1,36 @@
+<interfaces>
+  <wan>
+    <if>vmx0</if>
+    <ipaddr>10.0.10.1</ipaddr>
+    <subnet>24</subnet>
+  </wan>
+  <lan>
+    <if>vmx1</if>
+    <ipaddr>10.0.20.1</ipaddr>
+    <subnet>24</subnet>
+  </lan>
+  <opt1>
+    <if>vmx2</if>
+    <descr>OPT1</descr>
+    <ipaddr>10.0.30.1</ipaddr>
+    <subnet>24</subnet>
+  </opt1>
+</interfaces>
+<filter>
+  <rule>
+    <type>pass</type>
+    <interface>opt1</interface>
+    <source><network>OPT1</network></source>
+    <destination><address>10.0.10.2</address></destination>
+    <protocol>any</protocol>
+    <descr>Allow OPT1 to Kali</descr>
+  </rule>
+  <rule>
+    <type>pass</type>
+    <interface>opt1</interface>
+    <source><network>OPT1</network></source>
+    <destination><address>10.0.20.20</address></destination>
+    <protocol>any</protocol>
+    <descr>Allow OPT1 to Rocky Prod</descr>
+  </rule>
+</filter>

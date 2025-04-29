@@ -1,0 +1,57 @@
+---
+- name: Déploiement complet Lab ESXi PRO
+  hosts: esxi
+  gather_facts: no
+  vars_files:
+    - vars/main.yml
+
+  tasks:
+
+    - name: Créer vSwitch
+      ansible.builtin.shell: |
+        esxcli network vswitch standard add --vswitch-name={{ vswitch }}
+      ignore_errors: yes
+
+    - name: Créer Portgroups
+      ansible.builtin.shell: |
+        esxcli network vswitch standard portgroup add --portgroup-name={{ item }} --vswitch-name={{ vswitch }}
+      loop: "{{ portgroups }}"
+      ignore_errors: yes
+
+    - name: Créer dossier ISO
+      ansible.builtin.shell: mkdir -p {{ iso_path }}
+
+    - name: Copier les ISOs
+      ansible.builtin.copy:
+        src: "isos/{{ item.iso }}"
+        dest: "{{ iso_path }}/{{ item.iso }}"
+        mode: '0644'
+      loop: "{{ vms }}"
+      ignore_errors: yes
+
+    - name: Créer dossiers VMs
+      ansible.builtin.shell: |
+        mkdir -p {{ datastore_path }}/{{ item.name }}
+      loop: "{{ vms }}"
+
+    - name: Créer disques VMs
+      ansible.builtin.shell: |
+        vmkfstools -c 20G -a lsilogic -d thin {{ datastore_path }}/{{ item.name }}/{{ item.name }}.vmdk
+      loop: "{{ vms }}"
+
+    - name: Générer fichiers VMX avec Template
+      ansible.builtin.template:
+        src: templates/vmx_template.j2
+        dest: "{{ datastore_path }}/{{ item.name }}/{{ item.name }}.vmx"
+      loop: "{{ vms }}"
+      loop_control:
+        loop_var: vm
+
+    - name: Trouver IDs VMs
+      ansible.builtin.shell: vim-cmd vmsvc/getallvms | grep '{{ item.name }}' | awk '{print $1}'
+      register: vms_id
+      loop: "{{ vms }}"
+
+    - name: Allumer les VMs
+      ansible.builtin.shell: vim-cmd vmsvc/power.on {{ item.stdout }}
+      loop: "{{ vms_id.results }}"
